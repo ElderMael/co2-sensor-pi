@@ -12,30 +12,24 @@ const promExporter = PromExporter({
 const Prometheus = promExporter.client;
 
 const simpleCounter = new Prometheus.Gauge({
-    name: 'simple_counter',
+    name: 'co2_lecture',
     help: 'One route increases another one decreases'
 });
 
+app.use(promExporter.middleware);
+
+app.get('/metrics', promExporter.metrics);
+
 app.use((req, res, next) => {
+    console.log("Reading from sensor to collect metrics");
     try {
         const rxbuf = new Buffer(32);
         const bytes = rpio.i2cRead(rxbuf, 16).toString();
         console.log('Bytes read from gpio sensor:', bytes);
     } finally {
-        simpleCounter.set();
+        simpleCounter.set(10);
         next();
     }
-});
-app.use(promExporter.middleware);
-
-app.get('/metrics', promExporter.metrics);
-
-app.on('listening', () => {
-    rpio.i2cBegin();
-
-    rpio.i2cSetSlaveAddress(0x20);
-
-    rpio.i2cSetBaudRate(50000);
 });
 
 app.on('close', () => {
@@ -43,5 +37,11 @@ app.on('close', () => {
 });
 
 app.listen(port, () => {
+    console.log("Starting I2C Sensor Reading");
+    rpio.i2cBegin();
+
+    rpio.i2cSetSlaveAddress(0x20);
+
+    rpio.i2cSetBaudRate(50000);
     console.log(`server started at http://localhost:${port}`);
 });
