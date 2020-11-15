@@ -1,6 +1,8 @@
 import express from "express";
 import PromExporter from "@tailorbrands/node-exporter-prometheus"
-import rpio from "rpio";
+import { I2C } from 'raspi-i2c';
+
+let i2c: any;
 
 const app = express();
 const port = 8080;
@@ -21,9 +23,8 @@ app.use(promExporter.middleware);
 app.use((req, res, next) => {
     console.log("Reading from sensor to collect metrics");
     try {
-        const rxbuf = Buffer.alloc(32);
-        const bytes = rpio.i2cRead(rxbuf, 16);
-        console.log('Bytes read from gpio sensor:', bytes, rxbuf.toJSON());
+        const buffer = i2c.readSync(0x5a, 0x02, 8);
+        console.log("Buffer read:", buffer)
     } catch (e) {
         console.log("Error reading buffer.", e);
     } finally {
@@ -34,23 +35,19 @@ app.use((req, res, next) => {
 
 app.on('close', () => {
     console.log("Stopping RPIO");
-    rpio.i2cEnd();
 });
 
 app.get('/metrics', promExporter.metrics);
 
 app.listen(port, () => {
     console.log("Starting I2C Sensor Reading");
-    rpio.i2cBegin();
 
-    rpio.i2cSetSlaveAddress(0x5a);
+    i2c = new I2C();
 
-    rpio.i2cSetBaudRate(115200);
+    i2c.writeSync( 0x5a ,0xFF, [0x11, 0xe5, 0x72, 0x8a]);
 
-    rpio.i2cWrite(Buffer.from([0xFF, 0x11, 0xE5, 0x72, 0x8A]));
-
-    setTimeout(function () {
-        rpio.i2cWrite(Buffer.from([0xF4, 0]));
+    setTimeout(function() {
+        i2c.writeSync( 0x5a ,0xF4, [ 0xF4, 0]);
     }, 100);
 
     console.log(`server started at http://localhost:${port}`);
