@@ -1,14 +1,22 @@
 import express from "express";
+import PromExporter from "@tailorbrands/node-exporter-prometheus"
+// `appName` is the name of your service/application
 
 const app = express();
-const port = 8080; // default port to listen
+const port = 8080;
 
-// define a route handler for the default home page
-app.get("/", (req, res) => {
-    res.send("Hello world!");
-});
+const options = {
+    appName: 'co2-sensor-pi'
+};
 
-// start the Express server
+console.log(PromExporter);
+
+const promExporter = PromExporter(options);
+
+app.use(promExporter.middleware);
+app.get('/metrics', promExporter.metrics);
+
+
 app.listen(port, () => {
     console.log(`server started at http://localhost:${port}`);
 });
