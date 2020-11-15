@@ -9,7 +9,9 @@ const promExporter = PromExporter({
     appName: 'co2-sensor-pi'
 });
 
-const simpleCounter = new promExporter.promClient.Gauge({
+const Prometheus = promExporter.client;
+
+const simpleCounter = new Prometheus.Gauge({
     name: 'simple_counter',
     help: 'One route increases another one decreases'
 });
