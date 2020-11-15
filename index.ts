@@ -23,7 +23,7 @@ app.use((req, res, next) => {
     try {
         const rxbuf = Buffer.alloc(32);
         const bytes = rpio.i2cRead(rxbuf, 16);
-        console.log('Bytes read from gpio sensor:', bytes.toJSON());
+        console.log('Bytes read from gpio sensor:', bytes, rxbuf.toJSON());
     } catch (e) {
         console.log("Error reading buffer.", e);
     } finally {
