@@ -21,9 +21,9 @@ app.use(promExporter.middleware);
 app.use((req, res, next) => {
     console.log("Reading from sensor to collect metrics");
     try {
-        const rxbuf = new Buffer(32);
-        const bytes = rpio.i2cRead(rxbuf, 16).toString();
-        console.log('Bytes read from gpio sensor:', bytes);
+        const rxbuf = Buffer.alloc(32);
+        const bytes = rpio.i2cRead(rxbuf, 16);
+        console.log('Bytes read from gpio sensor:', bytes.toJSON());
     } catch (e) {
         console.log("Error reading buffer.", e);
     } finally {
@@ -45,6 +45,6 @@ app.listen(port, () => {
 
     rpio.i2cSetSlaveAddress(0x5a);
 
-    rpio.i2cSetBaudRate(50000);
+    rpio.i2cSetBaudRate(115200);
     console.log(`server started at http://localhost:${port}`);
 });
