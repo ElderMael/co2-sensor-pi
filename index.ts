@@ -1,6 +1,6 @@
 import express from "express";
 import PromExporter from "@tailorbrands/node-exporter-prometheus"
-import { I2C } from 'raspi-i2c';
+import {I2C} from 'raspi-i2c';
 
 let i2c: any;
 
@@ -44,10 +44,10 @@ app.listen(port, () => {
 
     i2c = new I2C();
 
-    i2c.writeSync( 0x5a ,0xFF, [0x11, 0xe5, 0x72, 0x8a]);
+    i2c.writeSync(0x5a, 0xFF, Buffer.from([0x11, 0xe5, 0x72, 0x8a]));
 
-    setTimeout(function() {
-        i2c.writeSync( 0x5a ,0xF4, [ 0xF4, 0]);
+    setTimeout(function () {
+        i2c.writeSync(0x5a, 0xF4, Buffer.from([0]));
     }, 100);
 
     console.log(`server started at http://localhost:${port}`);
