@@ -48,6 +48,7 @@ app.listen(port, () => {
 
     setTimeout(function () {
         i2c.writeSync(0x5a, 0xF4, Buffer.from([0]));
+        i2c.writeSync(0x5a, 0x01, Buffer.from([4]));
     }, 100);
 
     console.log(`server started at http://localhost:${port}`);
