@@ -47,10 +47,10 @@ app.listen(port, () => {
 
     rpio.i2cSetBaudRate(115200);
 
-    rpio.i2cWrite(Buffer.from([0x11, 0xE5, 0x72, 0x8A]));
+    rpio.i2cWrite(Buffer.from([0xFF, 0x11, 0xE5, 0x72, 0x8A]));
 
-    setTimeout(function() {
-        rpio.i2cWrite(Buffer.from([ 0xF4, 0 ]));
+    setTimeout(function () {
+        rpio.i2cWrite(Buffer.from([0xF4, 0]));
     }, 100);
 
     console.log(`server started at http://localhost:${port}`);
