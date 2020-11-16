@@ -44,11 +44,22 @@ app.listen(port, () => {
 
     i2c = new I2C();
 
+    // Soft Reset
+    console.log("Soft Reset Register");
     i2c.writeSync(0x5a, 0xFF, Buffer.from([0x11, 0xe5, 0x72, 0x8a]));
 
-    setTimeout(function () {
-        i2c.writeSync(0x5a, 0xF4, Buffer.from([0]));
-        i2c.writeSync(0x5a, 0x01, Buffer.from([4]));
+    setTimeout(() => {
+
+        console.log("Check if ready");
+        const readyBuff = i2c.readSync(0x5a, 0x20, 1);
+
+        console.log("Ready buffer:", readyBuff);
+        // bootloader
+        i2c.writeSync(0x5a, 0xF4, Buffer.from([0x00]));
+        // Measurement mode
+        i2c.writeSync(0x5a, 0x01, Buffer.from([0x01]));
+        // Temp Hum
+        i2c.writeSync(0x5a, 0x05, Buffer.from([0x01, 0x00, 0x01, 0x00]));
     }, 100);
 
     console.log(`server started at http://localhost:${port}`);
