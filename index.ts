@@ -34,8 +34,8 @@ const promExporter = PromExporter({
 const Prometheus = promExporter.client;
 
 const simpleCounter = new Prometheus.Gauge({
-    name: 'co2_lecture',
-    help: 'One route increases another one decreases'
+    name: 'co2_ppm',
+    help: 'Carbon Dioxide PPM'
 });
 
 app.use(promExporter.middleware);
@@ -56,14 +56,11 @@ app.use((req, res, next) => {
         const buffer = i2c.readSync(SENSOR_ADDRESS, RESULT_DATA_REGISTER, 8);
 
         console.log("Buffer: ", buffer.toJSON())
-        let lecture = (buffer[0] << 8) | buffer[1];
+        let reading = (buffer[0] << 8) | buffer[1];
 
-        console.log(`Buffer read: ${lecture} ppm`);
+        console.log(`Buffer read: ${reading} ppm`);
 
-        simpleCounter.set(lecture);
-
-        // Write Baseline
-        i2c.writeSync(SENSOR_ADDRESS, 0x11, Buffer.from([0x847B >> 8, 0x847B]));
+        simpleCounter.set(reading);
 
     } catch (e) {
         console.log("Error reading buffer.", e);
@@ -100,6 +97,7 @@ app.listen(port, () => {
         i2c.writeSync(SENSOR_ADDRESS, MEASUREMENT_MODE_REGISTER, Buffer.from([MeasureMode.EverySixtySeconds]));
         // Temp Hum
         i2c.writeSync(SENSOR_ADDRESS, ENVIRONMENT_DATA_REGISTER, Buffer.from([0x01, 0x00, 0x01, 0x00]));
+        // Write Baseline
     }, 100);
 
     console.log(`server started at http://localhost:${port}`);
