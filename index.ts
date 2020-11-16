@@ -11,6 +11,17 @@ const STATUS_REGISTER = 0x00;
 const RESULT_DATA_REGISTER = 0x02;
 const HARDWARE_ID_REGISTER = 0x20;
 
+enum MeasureMode {
+    Idle = 0x00,      //Idle (Measurements are disabled in this mode)
+    EverySecond= 0x01,    //Constant power mode, IAQ measurement every second
+    EveryTenSeconds = 0x02,   //Pulse heating mode IAQ measurement every 10 seconds
+    EverySixtySeconds= 0x03,   //Low power pulse heating mode IAQ measurement every 60 seconds
+    ConstantPower = 0x04 // Measures Every 250 ms
+}
+
+const MEASURE_250_MS = 0x04;
+
+
 let i2c: any;
 
 const app = express();
@@ -86,7 +97,7 @@ app.listen(port, () => {
         // bootloader
         i2c.writeSync(SENSOR_ADDRESS, APP_START_REGISTER, Buffer.from([0x00]));
         // Measurement mode
-        i2c.writeSync(SENSOR_ADDRESS, MEASUREMENT_MODE_REGISTER, Buffer.from([0x01]));
+        i2c.writeSync(SENSOR_ADDRESS, MEASUREMENT_MODE_REGISTER, Buffer.from([MeasureMode.ConstantPower]));
         // Temp Hum
         i2c.writeSync(SENSOR_ADDRESS, ENVIRONMENT_DATA_REGISTER, Buffer.from([0x01, 0x00, 0x01, 0x00]));
     }, 100);
