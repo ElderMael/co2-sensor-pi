@@ -32,12 +32,19 @@ app.use((req, res, next) => {
             return;
         }
 
+        console.log("Data is ready, reading buffer");
         const buffer = i2c.readSync(0x5a, 0x02, 8);
+
         console.log("Buffer: ", buffer.toJSON())
-        let lectureBe = (buffer.readUInt16LE(0) << 8) | buffer.readUInt16LE(2);
-        console.log(`Buffer read: ${lectureBe} ppm`);
+        let lecture = (buffer[0] << 8) | buffer[1];
+
+        console.log(`Buffer read: ${lecture} ppm`);
+
+        simpleCounter.set(lecture);
+        
+        // Write Baseline
         i2c.writeSync(0x5a, 0x11, Buffer.from([ 0x847B >> 8 , 0x847B ]));
-        simpleCounter.set(lectureBe);
+
     } catch (e) {
         console.log("Error reading buffer.", e);
     } finally {
