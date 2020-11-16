@@ -97,7 +97,7 @@ app.listen(port, () => {
         // bootloader
         i2c.writeSync(SENSOR_ADDRESS, APP_START_REGISTER, Buffer.from([0x00]));
         // Measurement mode
-        i2c.writeSync(SENSOR_ADDRESS, MEASUREMENT_MODE_REGISTER, Buffer.from([MeasureMode.ConstantPower]));
+        i2c.writeSync(SENSOR_ADDRESS, MEASUREMENT_MODE_REGISTER, Buffer.from([MeasureMode.EverySixtySeconds]));
         // Temp Hum
         i2c.writeSync(SENSOR_ADDRESS, ENVIRONMENT_DATA_REGISTER, Buffer.from([0x01, 0x00, 0x01, 0x00]));
     }, 100);
