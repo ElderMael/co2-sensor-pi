@@ -9,7 +9,7 @@ const MEASUREMENT_MODE_REGISTER = 0x01;
 const ENVIRONMENT_DATA_REGISTER = 0x05;
 const STATUS_REGISTER = 0x00;
 const RESULT_DATA_REGISTER = 0x02;
-
+const HARDWARE_ID_REGISTER = 0x20;
 
 let i2c: any;
 
@@ -80,7 +80,7 @@ app.listen(port, () => {
     setTimeout(() => {
 
         console.log("Check if ready");
-        const readyBuff = i2c.readSync(SENSOR_ADDRESS, 0x20, 1);
+        const readyBuff = i2c.readSync(SENSOR_ADDRESS, HARDWARE_ID_REGISTER, 1);
 
         console.log("Ready buffer:", readyBuff);
         // bootloader
