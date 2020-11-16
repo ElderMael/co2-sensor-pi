@@ -56,7 +56,7 @@ app.use((req, res, next) => {
         const buffer = i2c.readSync(SENSOR_ADDRESS, RESULT_DATA_REGISTER, 8);
 
         console.log("Buffer: ", buffer.toJSON())
-        let reading = (buffer[0] << 8) | buffer[1];
+        let reading = buffer.readUInt16BE();
 
         console.log(`Buffer read: ${reading} ppm`);
 
