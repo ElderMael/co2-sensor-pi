@@ -23,8 +23,8 @@ app.use(promExporter.middleware);
 app.use((req, res, next) => {
     console.log("Reading from sensor to collect metrics");
     try {
-        const buffer = i2c.readSync(0x5a, 0x02, 1);
-        let lectureBe = buffer.getInt16BE() << 8;
+        const buffer = i2c.readSync(0x5a, 0x02, 8);
+        let lectureBe = buffer[0] << 8;
         console.log(`Buffer read: ${lectureBe} ppm`);
         i2c.writeSync(0x5a, 0x11, Buffer.from([ 0x847B >> 8 , 0x847B ]));
         simpleCounter.set(lectureBe);
