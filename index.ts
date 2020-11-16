@@ -23,6 +23,15 @@ app.use(promExporter.middleware);
 app.use((req, res, next) => {
     console.log("Reading from sensor to collect metrics");
     try {
+
+        const dataReady = i2c.readSync(0x5a, 0x00, 1);
+        console.log("Data ready?", dataReady.toJSON())
+
+        if( (dataReady[0] >> 3) & 0x01 ) {
+            console.log("Data not ready");
+            return;
+        }
+
         const buffer = i2c.readSync(0x5a, 0x02, 8);
         console.log("Buffer: ", buffer.toJSON())
         let lectureBe = (buffer.readUInt16LE(0) << 8) | buffer.readUInt16LE(1);
