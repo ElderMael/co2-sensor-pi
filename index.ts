@@ -25,6 +25,7 @@ app.use((req, res, next) => {
     try {
         const buffer = i2c.readSync(0x5a, 0x02, 8);
         console.log("Buffer read:", buffer)
+        i2c.writeSync(0x5a, 0x11, Buffer.from([ 0x847B >> 8 , 0x847B ]));
     } catch (e) {
         console.log("Error reading buffer.", e);
     } finally {
