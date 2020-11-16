@@ -24,12 +24,13 @@ app.use((req, res, next) => {
     console.log("Reading from sensor to collect metrics");
     try {
         const buffer = i2c.readSync(0x5a, 0x02, 1);
-        console.log("Buffer read:", buffer)
+        let lecture = buffer.getInt16() << 8;
+        console.log(`Buffer read: ${lecture} ppm`);
         i2c.writeSync(0x5a, 0x11, Buffer.from([ 0x847B >> 8 , 0x847B ]));
+        simpleCounter.set(lecture);
     } catch (e) {
         console.log("Error reading buffer.", e);
     } finally {
-        simpleCounter.set(10);
         next();
     }
 });
