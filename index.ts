@@ -1,22 +1,24 @@
 import express from "express";
 import PromExporter from "@tailorbrands/node-exporter-prometheus"
 import {I2C} from 'raspi-i2c';
+import bitwise from "bitwise";
 
 const SENSOR_ADDRESS = 0x5a;
 const RESET_REGISTER = 0xFF;
 const APP_START_REGISTER = 0xF4;
 const MEASUREMENT_MODE_REGISTER = 0x01;
 const ENVIRONMENT_DATA_REGISTER = 0x05;
+const ERROR_REGISTER = 0xE0;
 const STATUS_REGISTER = 0x00;
 const RESULT_DATA_REGISTER = 0x02;
 const HARDWARE_ID_REGISTER = 0x20;
 
 enum MeasureMode {
-    Idle = 0x00,      //Idle (Measurements are disabled in this mode)
-    EverySecond= 0x01,    //Constant power mode, IAQ measurement every second
-    EveryTenSeconds = 0x02,   //Pulse heating mode IAQ measurement every 10 seconds
-    EverySixtySeconds= 0x03,   //Low power pulse heating mode IAQ measurement every 60 seconds
-    ConstantPower = 0x04 // Measures Every 250 ms
+    Idle = 0b0_000_0_000,      //Idle (Measurements are disabled in this mode)
+    EverySecond = 0b0_001_0_000,    //Constant power mode, IAQ measurement every second
+    EveryTenSeconds = 0b0_010_0_000,   //Pulse heating mode IAQ measurement every 10 seconds
+    EverySixtySeconds = 0b0_011_0_000,   //Low power pulse heating mode IAQ measurement every 60 seconds
+    ConstantPower = 0b0_100_0_000 // Measures Every 250 ms
 }
 
 const MEASURE_250_MS = 0x04;
@@ -44,11 +46,14 @@ app.use((req, res, next) => {
     console.log("Reading from sensor to collect metrics");
     try {
 
-        const dataReady = i2c.readSync(SENSOR_ADDRESS, STATUS_REGISTER, 1);
-        console.log("Data ready?", dataReady.toJSON())
+        const statusRegisterReading = i2c.readSync(SENSOR_ADDRESS, STATUS_REGISTER, 1);
 
-        if ((dataReady[0] >> 3) & 0x01) {
-            console.log("Data not ready");
+        const isDataReady = bitwise.integer.getBit(statusRegisterReading[0], 3);
+
+        if (!isDataReady) {
+            console.log("Data not ready. Skipping.");
+            console.log("Status Register Data:", statusRegisterReading.toJSON());
+            console.log("Error bytes: ", i2c.readSync(SENSOR_ADDRESS, ERROR_REGISTER, 2).toJSON());
             return;
         }
 
@@ -87,18 +92,25 @@ app.listen(port, () => {
 
     setTimeout(() => {
 
-        console.log("Check if ready");
-        const readyBuff = i2c.readSync(SENSOR_ADDRESS, HARDWARE_ID_REGISTER, 1);
+        const statusRegisterReading = i2c.readSync(SENSOR_ADDRESS, STATUS_REGISTER, 1);
 
-        console.log("Ready buffer:", readyBuff);
+        const firmwareMode = bitwise.integer.getBit(statusRegisterReading[0], 7);
+
+        if (firmwareMode == 1) {
+            console.log("Firmware is now on application mode");
+        } else {
+            console.log("Error with firmware mode", statusRegisterReading.toJSON());
+        }
+
         // bootloader
         i2c.writeSync(SENSOR_ADDRESS, APP_START_REGISTER, Buffer.from([0x00]));
         // Measurement mode
         i2c.writeSync(SENSOR_ADDRESS, MEASUREMENT_MODE_REGISTER, Buffer.from([MeasureMode.EverySixtySeconds]));
         // Temp Hum
-        i2c.writeSync(SENSOR_ADDRESS, ENVIRONMENT_DATA_REGISTER, Buffer.from([0x01, 0x00, 0x01, 0x00]));
+        // TODO: Get Humidity Data From Weather API To Get Better Results
+        // i2c.writeSync(SENSOR_ADDRESS, ENVIRONMENT_DATA_REGISTER, Buffer.from([0x01, 0x00, 0x01, 0x00]));
         // Write Baseline
-    }, 100);
+    }, 200);
 
     console.log(`server started at http://localhost:${port}`);
 });

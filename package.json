@@ -27,6 +27,7 @@
   "dependencies": {
     "@tailorbrands/node-exporter-prometheus": "^2.0.7",
     "express": "^4.17.1",
-    "raspi-i2c": "^6.2.4"
+    "raspi-i2c": "^6.2.4",
+    "bitwise": "^2.0.4"
   }
 }
