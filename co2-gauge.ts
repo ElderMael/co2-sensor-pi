@@ -1,4 +1,4 @@
-import PromExporter from "*";
+import PromExporter from "@tailorbrands/node-exporter-prometheus";
 
 export const promExporter = PromExporter({
     appName: 'co2-sensor-pi'
