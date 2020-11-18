@@ -33,7 +33,11 @@ export default function readSensorMiddleware(i2c: any, co2Gauge: any): RequestHa
 
             console.log(`Buffer read: ${reading} ppm`);
 
-            co2Gauge.set(reading);
+            // Reading cannot be less than 400 ppm, so set it to minimum
+            // And it also cannot be more than 8192
+            const metric = Math.min(Math.max(reading, 400), 8192);
+
+            co2Gauge.set(metric);
 
         } catch (e) {
             console.log("Error reading buffer.", e);
