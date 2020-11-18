@@ -48,7 +48,7 @@ app.use((req, res, next) => {
 
         const statusRegisterReading = i2c.readSync(SENSOR_ADDRESS, STATUS_REGISTER, 1);
 
-        const isDataReady = bitwise.integer.getBit(statusRegisterReading[0], 3);
+        const isDataReady = bitwise.integer.getBit(statusRegisterReading[0], 4);
 
         if (isDataReady === 0) {
             console.log("Data not ready. Skipping.");
