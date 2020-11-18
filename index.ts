@@ -50,10 +50,15 @@ app.use((req, res, next) => {
 
         const isDataReady = bitwise.integer.getBit(statusRegisterReading[0], 3);
 
-        if (isDataReady === 1) {
+        if (isDataReady === 0) {
             console.log("Data not ready. Skipping.");
-            console.log("Status Register Data:", statusRegisterReading.toJSON());
-            console.log("Error bytes: ", i2c.readSync(SENSOR_ADDRESS, ERROR_REGISTER, 2).toJSON());
+            console.log("Status Register Data:", bitwise.byte.read(statusRegisterReading[0]));
+
+            let errorRegisterBytes = i2c.readSync(SENSOR_ADDRESS, ERROR_REGISTER, 2);
+            console.log("Error bytes: ",
+                bitwise.byte.read(errorRegisterBytes[0]),
+                bitwise.byte.read(errorRegisterBytes[1])
+            );
             return;
         }
 
@@ -95,7 +100,7 @@ app.listen(port, () => {
         console.log("Reading hardware ID.")
         const hardwareIdBuffer = i2c.readSync(SENSOR_ADDRESS, HARDWARE_ID_REGISTER, 1);
         const hardwareId = hardwareIdBuffer[0];
-        console.log("Hardware ID from sensor:", hardwareIdBuffer.toJSON());
+        console.log("Hardware ID from sensor:", bitwise.byte.read(hardwareId));
 
         if (hardwareId !== 0x81) {
             console.log("Hardware ID did not match: ", hardwareId);
@@ -106,11 +111,10 @@ app.listen(port, () => {
         console.log("Reading status from  sensor.")
         const statusBuffer = i2c.readSync(SENSOR_ADDRESS, STATUS_REGISTER, 1);
         const statusApplicationBit = bitwise.integer.getBit(statusBuffer[0], 4);
-        console.log("Status from buffer:", hardwareIdBuffer.toJSON());
         console.log("Status byte on binary: ", bitwise.byte.read(statusBuffer[0]));
 
         if (statusApplicationBit !== 1) {
-            console.log("");
+            console.log("Application mode bit error. Stopping.", statusApplicationBit);
             process.exit(1);
         }
 
@@ -119,8 +123,9 @@ app.listen(port, () => {
 
         console.log("Reading status from  sensor.")
         const appStatusBuffer = i2c.readSync(SENSOR_ADDRESS, STATUS_REGISTER, 1);
-        const firmwareModeBit = bitwise.integer.getBit(appStatusBuffer[0], 7);
-        console.log("Status from buffer:", appStatusBuffer.toJSON());
+        let appStatusByte = appStatusBuffer[0];
+        const firmwareModeBit = bitwise.integer.getBit(appStatusByte, 7);
+        console.log("Status from buffer:", bitwise.byte.read(appStatusByte));
 
         if (firmwareModeBit !== 1) {
             console.log("Firmware mode bit is not 1", firmwareModeBit);
