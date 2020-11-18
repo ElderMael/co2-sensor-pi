@@ -2,7 +2,7 @@ import {ERROR_REGISTER, RESULT_DATA_REGISTER, SENSOR_ADDRESS, STATUS_REGISTER} f
 import bitwise from "bitwise";
 import {RequestHandler} from "express";
 
-export function readSensorMiddleware(i2c: any, co2Gauge: any): RequestHandler {
+export default function readSensorMiddleware(i2c: any, co2Gauge: any): RequestHandler {
 
     return (req, res, next) => {
         console.log("Reading from sensor to collect metrics");
