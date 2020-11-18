@@ -50,7 +50,7 @@ app.use((req, res, next) => {
 
         const isDataReady = bitwise.integer.getBit(statusRegisterReading[0], 3);
 
-        if (!isDataReady) {
+        if (isDataReady === 1) {
             console.log("Data not ready. Skipping.");
             console.log("Status Register Data:", statusRegisterReading.toJSON());
             console.log("Error bytes: ", i2c.readSync(SENSOR_ADDRESS, ERROR_REGISTER, 2).toJSON());
@@ -87,30 +87,49 @@ app.listen(port, () => {
     i2c = new I2C();
 
     // Soft Reset
-    console.log("Soft Reset Register");
+    console.log("Soft Reset Register To Boot Mode");
     i2c.writeSync(SENSOR_ADDRESS, RESET_REGISTER, Buffer.from([0x11, 0xe5, 0x72, 0x8a]));
 
     setTimeout(() => {
+        // Read Hardware ID
+        console.log("Reading hardware ID.")
+        const hardwareIdBuffer = i2c.readSync(SENSOR_ADDRESS, HARDWARE_ID_REGISTER, 1);
+        const hardwareId = hardwareIdBuffer[0];
+        console.log("Hardware ID from sensor:", hardwareIdBuffer.toJSON());
 
-        const statusRegisterReading = i2c.readSync(SENSOR_ADDRESS, STATUS_REGISTER, 1);
-
-        const firmwareMode = bitwise.integer.getBit(statusRegisterReading[0], 7);
-
-        if (firmwareMode == 1) {
-            console.log("Firmware is now on application mode");
-        } else {
-            console.log("Error with firmware mode", statusRegisterReading.toJSON());
+        if (hardwareId !== 0x81) {
+            console.log("Hardware ID did not match: ", hardwareId);
+            process.exit(1);
         }
 
-        // bootloader
-        i2c.writeSync(SENSOR_ADDRESS, APP_START_REGISTER, Buffer.from([0x00]));
-        // Measurement mode
+        // Read status
+        console.log("Reading status from  sensor.")
+        const statusBuffer = i2c.readSync(SENSOR_ADDRESS, STATUS_REGISTER, 1);
+        const statusApplicationBit = bitwise.integer.getBit(statusBuffer[0], 4);
+        console.log("Status from buffer:", hardwareIdBuffer.toJSON());
+        console.log("Status byte on binary: ", bitwise.byte.read(statusBuffer[0]));
+
+        if (statusApplicationBit !== 1) {
+            console.log("");
+            process.exit(1);
+        }
+
+        console.log("Write to App Start register");
+        i2c.writeSync(SENSOR_ADDRESS, APP_START_REGISTER, Buffer.from([]));
+
+        console.log("Reading status from  sensor.")
+        const appStatusBuffer = i2c.readSync(SENSOR_ADDRESS, STATUS_REGISTER, 1);
+        const firmwareModeBit = bitwise.integer.getBit(appStatusBuffer[0], 7);
+        console.log("Status from buffer:", appStatusBuffer.toJSON());
+
+        if (firmwareModeBit !== 1) {
+            console.log("Firmware mode bit is not 1", firmwareModeBit);
+        }
+
+        console.log("Write drive mode");
         i2c.writeSync(SENSOR_ADDRESS, MEASUREMENT_MODE_REGISTER, Buffer.from([MeasureMode.EverySixtySeconds]));
-        // Temp Hum
-        // TODO: Get Humidity Data From Weather API To Get Better Results
-        // i2c.writeSync(SENSOR_ADDRESS, ENVIRONMENT_DATA_REGISTER, Buffer.from([0x01, 0x00, 0x01, 0x00]));
-        // Write Baseline
-    }, 200);
+
+    }, 500);
 
     console.log(`server started at http://localhost:${port}`);
 });
