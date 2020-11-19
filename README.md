@@ -17,12 +17,14 @@ requests, but I do not want traffic out of the network.
 
 ## ScreenShots
 
+![Proto Board](images/proto-board.jpeg)
 ![Grafana Dashboard](images/grafana-dashboard.png)
 ![HTTP Request Exchange](images/http-request.png)
 
 ## Tech
 
-* Node v14.15.1
+* TypeScript
+* Node
 * Express
 * raspi-i2c
 
