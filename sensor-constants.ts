@@ -18,5 +18,5 @@ export enum MeasureMode {
 
 export const MAX_CO2_SENSOR_VALUE = 8192;
 export const MIN_CO2_SENSOR_VALUE = 400;
-export const MAX_TVOC_SENSOR_VALUE = 8192;
-export const MIN_TVOC_SENSOR_VALUE = 400;
+export const MAX_TVOC_SENSOR_VALUE = 1187;
+export const MIN_TVOC_SENSOR_VALUE = 0;
