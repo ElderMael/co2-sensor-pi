@@ -3,14 +3,14 @@ import {I2C} from 'raspi-i2c';
 
 import initSensor from "./init-sensor";
 import readSensorMiddleware from './read-sensor-middleware';
-import {co2Gauge, promExporter} from './co2-gauge';
+import {promExporter} from './co2-gauge';
 
 let i2c = new I2C();
 
 const app = express();
 
 app.use(promExporter.middleware);
-app.use(readSensorMiddleware(i2c, co2Gauge));
+app.use(readSensorMiddleware(i2c));
 app.get('/metrics', promExporter.metrics);
 
 const {SERVER_PORT} = process.env;

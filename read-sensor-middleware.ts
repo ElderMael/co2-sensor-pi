@@ -1,9 +1,28 @@
 import {ERROR_REGISTER, RESULT_DATA_REGISTER, SENSOR_ADDRESS, STATUS_REGISTER} from "./sensor-constants";
 import bitwise from "bitwise";
 import {RequestHandler} from "express";
+import {co2Gauge, errorCountersByBitPosition} from "./co2-gauge";
 
-export default function readSensorMiddleware(i2c: any, co2Gauge: any): RequestHandler {
+const MAX_CO2_SENSOR_VALUE = 8192;
+const MIN_CO2_SENSOR_VALUE = 400;
 
+function checkErrorRegister(i2c: any) {
+    let errorRegisterBytes = i2c.readSync(SENSOR_ADDRESS, ERROR_REGISTER, 1);
+    let errorBits = bitwise.byte.read(errorRegisterBytes[0]);
+    console.log("Error bytes: ",
+        errorBits
+    );
+
+    errorBits.forEach((bit, index) => {
+        if (bit) {
+            errorCountersByBitPosition[index].inc();
+        }
+    });
+
+}
+
+export default function readSensorMiddleware(i2c: any): RequestHandler {
+    let lastReading: number | undefined;
     return (req, res, next) => {
         console.log("Reading from sensor to collect metrics");
 
@@ -17,11 +36,7 @@ export default function readSensorMiddleware(i2c: any, co2Gauge: any): RequestHa
                 console.log("Data not ready. Skipping.");
                 console.log("Status Register Data:", bitwise.byte.read(statusRegisterReading[0]));
 
-                let errorRegisterBytes = i2c.readSync(SENSOR_ADDRESS, ERROR_REGISTER, 2);
-                console.log("Error bytes: ",
-                    bitwise.byte.read(errorRegisterBytes[0]),
-                    bitwise.byte.read(errorRegisterBytes[1])
-                );
+                checkErrorRegister(i2c);
                 return;
             }
 
@@ -29,15 +44,20 @@ export default function readSensorMiddleware(i2c: any, co2Gauge: any): RequestHa
             const buffer = i2c.readSync(SENSOR_ADDRESS, RESULT_DATA_REGISTER, 8);
 
             console.log("Buffer: ", buffer.toJSON())
+
             let reading = buffer.readUInt16BE();
 
-            console.log(`Buffer read: ${reading} ppm`);
+            if (reading > MAX_CO2_SENSOR_VALUE || reading < MIN_CO2_SENSOR_VALUE) {
+                console.log("Reading is not within sensor threshold, checking error register");
+                co2Gauge.set(lastReading ? lastReading : MIN_CO2_SENSOR_VALUE);
 
-            // Reading cannot be less than 400 ppm, so set it to minimum
-            // And it also cannot be more than 8192
-            const metric = Math.min(Math.max(reading, 400), 8192);
+                checkErrorRegister(i2c);
 
-            co2Gauge.set(metric);
+                return;
+            }
+
+            lastReading = reading;
+            co2Gauge.set(reading);
 
         } catch (e) {
             console.log("Error reading buffer.", e);
