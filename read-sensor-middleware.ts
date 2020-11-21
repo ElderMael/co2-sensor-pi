@@ -71,7 +71,7 @@ export default function readSensorMiddleware(i2c: any): RequestHandler {
                 );
 
                 co2Gauge.set(lastCo2Reading ? lastCo2Reading : MIN_CO2_SENSOR_VALUE);
-                co2Gauge.set(lastTvocReading ? lastTvocReading : MIN_TVOC_SENSOR_VALUE);
+                tvocGauge.set(lastTvocReading ? lastTvocReading : MIN_TVOC_SENSOR_VALUE);
 
                 checkErrorRegister(i2c);
 
