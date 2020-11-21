@@ -6,7 +6,12 @@ export const promExporter = PromExporter({
 
 export const co2Gauge = new promExporter.client.Gauge({
     name: 'co2_ppm',
-    help: 'Carbon Dioxide PPM'
+    help: 'Carbon Dioxide Measure In  Parts Per Million'
+});
+
+export const tvocGauge = new promExporter.client.Gauge({
+    name: 'tvoc_ppb',
+    help: 'Total Volatile Organic Compounds In Parts Per Billion'
 });
 
 export const messageInvalidErrorCounter = new promExporter.client.Counter({

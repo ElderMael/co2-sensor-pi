@@ -15,3 +15,8 @@ export enum MeasureMode {
     EverySixtySeconds = 0b0_011_0_000,   //Low power pulse heating mode IAQ measurement every 60 seconds
     ConstantPower = 0b0_100_0_000 // Measures Every 250 ms
 }
+
+export const MAX_CO2_SENSOR_VALUE = 8192;
+export const MIN_CO2_SENSOR_VALUE = 400;
+export const MAX_TVOC_SENSOR_VALUE = 8192;
+export const MIN_TVOC_SENSOR_VALUE = 400;
