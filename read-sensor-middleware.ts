@@ -48,7 +48,7 @@ export default function readSensorMiddleware(i2c: any): RequestHandler {
             let reading = buffer.readUInt16BE();
 
             if (reading > MAX_CO2_SENSOR_VALUE || reading < MIN_CO2_SENSOR_VALUE) {
-                console.log("Reading is not within sensor threshold, checking error register");
+                console.log(`Reading (${reading} ppm) is not within sensor threshold, checking error register`);
                 co2Gauge.set(lastReading ? lastReading : MIN_CO2_SENSOR_VALUE);
 
                 checkErrorRegister(i2c);
