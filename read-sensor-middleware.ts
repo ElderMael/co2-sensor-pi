@@ -9,7 +9,7 @@ const MIN_CO2_SENSOR_VALUE = 400;
 function checkErrorRegister(i2c: any) {
     let errorRegisterBytes = i2c.readSync(SENSOR_ADDRESS, ERROR_REGISTER, 1);
     let errorBits = bitwise.byte.read(errorRegisterBytes[0]);
-    console.log("Error bytes: ",
+    console.log("Error byte: ",
         errorBits
     );
 
