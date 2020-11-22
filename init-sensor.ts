@@ -5,6 +5,7 @@ import {
     MeasureMode,
     RESET_REGISTER,
     SENSOR_ADDRESS,
+    SENSOR_HARDWARE_ID_MAGIC_NUMBER,
     STATUS_REGISTER
 } from "./sensor-constants";
 import bitwise from "bitwise";
@@ -21,9 +22,8 @@ function initSensor(i2c: any) {
         console.log("Reading hardware ID.")
         const hardwareIdBuffer = i2c.readSync(SENSOR_ADDRESS, HARDWARE_ID_REGISTER, 1);
         const hardwareId = hardwareIdBuffer[0];
-        console.log("Hardware ID from sensor:", bitwise.byte.read(hardwareId));
 
-        if (hardwareId !== 0x81) {
+        if (hardwareId !== SENSOR_HARDWARE_ID_MAGIC_NUMBER) {
             console.log("Hardware ID did not match: ", hardwareId);
             process.exit(1);
         }

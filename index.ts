@@ -5,16 +5,16 @@ import initSensor from "./init-sensor";
 import readSensorMiddleware from './read-sensor-middleware';
 import {promExporter} from './co2-gauge';
 
-let i2c = new I2C();
+const {SERVER_PORT} = process.env;
+const serverPort = SERVER_PORT || 8080;
+
+const i2c = new I2C();
 
 const app = express();
 
 app.use(promExporter.middleware);
 app.use(readSensorMiddleware(i2c));
 app.get('/metrics', promExporter.metrics);
-
-const {SERVER_PORT} = process.env;
-const serverPort = SERVER_PORT || 8080;
 
 app.listen(serverPort, () => {
     initSensor(i2c);
